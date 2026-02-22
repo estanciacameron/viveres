@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Víveres - Estancia Cameron</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f5f5}
+.container{max-width:100%;margin:0 auto;background:white;min-height:100vh}
+.header{background:#2c5282;color:white;padding:20px;position:sticky;top:0;z-index:100}
+.header h1{font-size:20px;margin-bottom:4px}
+.login-screen{padding:24px}
+.welcome-text{text-align:center;margin-bottom:32px}
+.welcome-text h2{font-size:24px;color:#2d3748;margin-bottom:8px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-weight:600;margin-bottom:8px;color:#2d3748}
+.form-group select{width:100%;padding:14px;border:2px solid #e2e8f0;border-radius:8px;font-size:16px}
+.form-group select:focus{outline:none;border-color:#2c5282}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:12px}
+.btn-primary{background:#2c5282;color:white}
+.btn-secondary{background:#48bb78;color:white}
+.btn:disabled{background:#cbd5e0;color:#a0aec0}
+.form-screen{display:none}
+.form-screen.active{display:block}
+.user-bar{background:#f7fafc;padding:12px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between}
+.user-name{font-weight:600;font-size:15px}
+.logout-btn{background:none;border:none;color:#e53e3e;cursor:pointer;padding:6px}
+.productos-container{padding:16px;max-height:60vh;overflow-y:auto}
+.producto-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #f0f0f0}
+.producto-nombre{flex:1;font-size:14px}
+.producto-precio{width:80px;text-align:right;font-size:12px;color:#666}
+.cantidad-input{width:60px;padding:8px;border:2px solid #e2e8f0;border-radius:6px;text-align:center;font-size:15px}
+.subtotal{width:80px;text-align:right;font-weight:600;color:#2c5282;font-size:12px}
+.footer-sticky{position:fixed;bottom:0;left:0;right:0;background:white;border-top:3px solid #2c5282;padding:16px}
+.total-section{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.total-label{font-size:13px;color:#666}
+.total-amount{font-size:24px;font-weight:bold;color:#2c5282}
+.progress-bar{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;background:#48bb78;transition:width .3s,background .3s}
+.progress-fill.warning{background:#ed8936}
+.progress-fill.danger{background:#f56565}
+.alert{padding:12px;border-radius:8px;margin:12px 16px;display:none}
+.alert.visible{display:block}
+.alert-danger{background:#fed7d7;color:#742a2a}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+.admin-header{background:#48bb78;color:white;padding:20px;display:flex;justify-content:space-between}
+.admin-content{padding:16px}
+.pedido-card{background:#f7fafc;border:2px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:12px}
+@media (min-width:768px){
+.container{max-width:900px;margin:20px auto;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.header{border-radius:12px 12px 0 0}
+.login-screen{padding:40px;max-width:500px;margin:0 auto}
+.productos-container{max-height:calc(100vh - 300px);padding:20px}
+.producto-row{padding:16px}
+.producto-row:hover{background:#f7fafc}
+.footer-sticky{position:relative;margin-top:20px}
+}
+@media (min-width:1024px){
+.container{max-width:1100px}
+.productos-container{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e2e8f0}
+.producto-row{background:white;margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="container" id="loginScreen">
+<div class="header"><h1>📋 Lista de Víveres</h1><p>Estancia Cameron</p></div>
+<div class="login-screen">
+<div class="welcome-text"><h2>Bienvenido</h2><p>Ingrese sus datos</p></div>
+<div class="form-group">
+<label>Nombre *</label>
+<select id="nombreTrabajador">
+<option value="">-- Seleccione --</option>
+<option value="Fmla Larraín" data-presupuesto="null">Fmla Larraín</option>
+<option value="Cocina Cameron" data-presupuesto="null">Cocina Cameron</option>
+<option value="Irma Ovalle" data-presupuesto="50000">Irma Ovalle</option>
+<option value="Victor Ojeda" data-presupuesto="50000">Victor Ojeda</option>
+<option value="Patricio Lopetegui" data-presupuesto="50000">Patricio Lopetegui</option>
+<option value="Guillermo Chacón" data-presupuesto="190000">Guillermo Chacón</option>
+<option value="Emilio Calixto" data-presupuesto="50000">Emilio Calixto</option>
+<option value="Carlos Aguilar" data-presupuesto="50000">Carlos Aguilar</option>
+<option value="Mauricio" data-presupuesto="180000">Mauricio</option>
+<option value="Martín Rasmussen" data-presupuesto="50000">Martín Rasmussen</option>
+<option value="Jonatan Molina" data-presupuesto="190000">Jonatan Molina</option>
+<option value="Paulino" data-presupuesto="110000">Paulino</option>
+<option value="Gustavo A" data-presupuesto="50000">Gustavo A</option>
+<option value="Remigio" data-presupuesto="180000">Remigio</option>
+<option value="Aserradero" data-presupuesto="null">Aserradero</option>
+<option value="Josué D" data-presupuesto="110000">Josué D</option>
+<option value="Cocina Russfin" data-presupuesto="null">Cocina Russfin</option>
+<option value="Nelson" data-presupuesto="null">Nelson</option>
+<option value="Hernández" data-presupuesto="null">Hernández</option>
+<option value="Miguel Villegas" data-presupuesto="180000">Miguel Villegas</option>
+<option value="Herminio" data-presupuesto="110000">Herminio</option>
+<option value="Carlos Simón" data-presupuesto="110000">Carlos Simón</option>
+<option value="Cocina RG" data-presupuesto="null">Cocina RG</option>
+<option value="Horacio" data-presupuesto="50000">Horacio</option>
+<option value="Jaime V" data-presupuesto="110000">Jaime V</option>
+<option value="Ricardo O" data-presupuesto="110000">Ricardo O</option>
+<option value="Varios" data-presupuesto="null">Varios</option>
+
+</select>
+</div>
+<div class="form-group">
+<label>Mes *</label>
+<select id="mesPedido">
+<option value="">-- Seleccione --</option>
+<option value="Marzo 2026">Marzo 2026</option>
+<option value="Abril 2026">Abril 2026</option>
+<option value="Mayo 2026">Mayo 2026</option>
+<option value="Junio 2026">Junio 2026</option>
+<option value="Julio 2026">Julio 2026</option>
+<option value="Agosto 2026">Agosto 2026</option>
+<option value="Septiembre 2026">Septiembre 2026</option>
+<option value="Octubre 2026">Octubre 2026</option>
+<option value="Noviembre 2026">Noviembre 2026</option>
+<option value="Diciembre 2026">Diciembre 2026</option>
+</select>
+</div>
+<button class="btn btn-primary" onclick="iniciarPedido()">Comenzar Pedido</button>
+
+</div>
+</div>
+
+<!-- FORMULARIO -->
+<div class="container form-screen" id="formScreen">
+<div class="header"><h1>📋 Lista de Víveres</h1></div>
+<div class="user-bar">
+<div><div class="user-name" id="displayNombre"></div><div id="displayMes" style="font-size:12px;color:#666"></div></div>
+<button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+</div>
+<div class="alert alert-danger" id="alertError">⚠️ Ha excedido su presupuesto</div>
+<div class="productos-container">
+<div class="producto-row">
+<span class="producto-nombre">Aceite (und.)</span>
+<span class="producto-precio">$1,753</span>
+<input type="number" class="cantidad-input" data-nombre="Aceite (und.)" data-precio="1753" min="0" value="0" id="prod_0">
+<span class="subtotal" id="sub_0">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Aceituna 340gr</span>
+<span class="producto-precio">$1,900</span>
+<input type="number" class="cantidad-input" data-nombre="Aceituna 340gr" data-precio="1900" min="0" value="0" id="prod_1">
+<span class="subtotal" id="sub_1">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Aji crema 240 grs</span>
+<span class="producto-precio">$1,000</span>
+<input type="number" class="cantidad-input" data-nombre="Aji crema 240 grs" data-precio="1000" min="0" value="0" id="prod_2">
+<span class="subtotal" id="sub_2">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Ajo polvo (und.) 50 grs</span>
+<span class="producto-precio">$400</span>
+<input type="number" class="cantidad-input" data-nombre="Ajo polvo (und.) 50 grs" data-precio="400" min="0" value="0" id="prod_3">
+<span class="subtotal" id="sub_3">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Arroz (kg.)</span>
+<span class="producto-precio">$1,373</span>
+<input type="number" class="cantidad-input" data-nombre="Arroz (kg.)" data-precio="1373" min="0" value="0" id="prod_4">
+<span class="subtotal" id="sub_4">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Arvejitas (tarros)</span>
+<span class="producto-precio">$482</span>
+<input type="number" class="cantidad-input" data-nombre="Arvejitas (tarros)" data-precio="482" min="0" value="0" id="prod_5">
+<span class="subtotal" id="sub_5">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Arvejas (kg.)</span>
+<span class="producto-precio">$2,110</span>
+<input type="number" class="cantidad-input" data-nombre="Arvejas (kg.)" data-precio="2110" min="0" value="0" id="prod_6">
+<span class="subtotal" id="sub_6">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Azúcar (kg.)</span>
+<span class="producto-precio">$1,186</span>
+<input type="number" class="cantidad-input" data-nombre="Azúcar (kg.)" data-precio="1186" min="0" value="0" id="prod_7">
+<span class="subtotal" id="sub_7">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Atún (tarro)</span>
+<span class="producto-precio">$1,073</span>
+<input type="number" class="cantidad-input" data-nombre="Atún (tarro)" data-precio="1073" min="0" value="0" id="prod_8">
+<span class="subtotal" id="sub_8">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Bolsa basura (paq.)</span>
+<span class="producto-precio">$785</span>
+<input type="number" class="cantidad-input" data-nombre="Bolsa basura (paq.)" data-precio="785" min="0" value="0" id="prod_9">
+<span class="subtotal" id="sub_9">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Café (tarros)</span>
+<span class="producto-precio">$6,036</span>
+<input type="number" class="cantidad-input" data-nombre="Café (tarros)" data-precio="6036" min="0" value="0" id="prod_10">
+<span class="subtotal" id="sub_10">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cabello ángel (und.)</span>
+<span class="producto-precio">$966</span>
+<input type="number" class="cantidad-input" data-nombre="Cabello ángel (und.)" data-precio="966" min="0" value="0" id="prod_11">
+<span class="subtotal" id="sub_11">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Caldo Maggi Carne (12und)</span>
+<span class="producto-precio">$1,590</span>
+<input type="number" class="cantidad-input" data-nombre="Caldo Maggi Carne (12und)" data-precio="1590" min="0" value="0" id="prod_12">
+<span class="subtotal" id="sub_12">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Caldo Maggi Gallina (12und)</span>
+<span class="producto-precio">$1,587</span>
+<input type="number" class="cantidad-input" data-nombre="Caldo Maggi Gallina (12und)" data-precio="1587" min="0" value="0" id="prod_13">
+<span class="subtotal" id="sub_13">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Caldo Maggi Verdura (12 und)</span>
+<span class="producto-precio">$1,088</span>
+<input type="number" class="cantidad-input" data-nombre="Caldo Maggi Verdura (12 und)" data-precio="1088" min="0" value="0" id="prod_14">
+<span class="subtotal" id="sub_14">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cebolla (kg)</span>
+<span class="producto-precio">$995</span>
+<input type="number" class="cantidad-input" data-nombre="Cebolla (kg)" data-precio="995" min="0" value="0" id="prod_15">
+<span class="subtotal" id="sub_15">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cera piso roja (und)</span>
+<span class="producto-precio">$2,500</span>
+<input type="number" class="cantidad-input" data-nombre="Cera piso roja (und)" data-precio="2500" min="0" value="0" id="prod_16">
+<span class="subtotal" id="sub_16">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cera piso liquida(und.)</span>
+<span class="producto-precio">$1,342</span>
+<input type="number" class="cantidad-input" data-nombre="Cera piso liquida(und.)" data-precio="1342" min="0" value="0" id="prod_17">
+<span class="subtotal" id="sub_17">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cif crema (und.)</span>
+<span class="producto-precio">$1,800</span>
+<input type="number" class="cantidad-input" data-nombre="Cif crema (und.)" data-precio="1800" min="0" value="0" id="prod_18">
+<span class="subtotal" id="sub_18">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Cloro 1 lts ( und)</span>
+<span class="producto-precio">$695</span>
+<input type="number" class="cantidad-input" data-nombre="Cloro 1 lts ( und)" data-precio="695" min="0" value="0" id="prod_19">
+<span class="subtotal" id="sub_19">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Comino (und.)</span>
+<span class="producto-precio">$500</span>
+<input type="number" class="cantidad-input" data-nombre="Comino (und.)" data-precio="500" min="0" value="0" id="prod_20">
+<span class="subtotal" id="sub_20">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Corbata (und.)</span>
+<span class="producto-precio">$965</span>
+<input type="number" class="cantidad-input" data-nombre="Corbata (und.)" data-precio="965" min="0" value="0" id="prod_21">
+<span class="subtotal" id="sub_21">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Crema de esparrago 68grs</span>
+<span class="producto-precio">$672</span>
+<input type="number" class="cantidad-input" data-nombre="Crema de esparrago 68grs" data-precio="672" min="0" value="0" id="prod_22">
+<span class="subtotal" id="sub_22">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Crema (tarros)</span>
+<span class="producto-precio">$1,279</span>
+<input type="number" class="cantidad-input" data-nombre="Crema (tarros)" data-precio="1279" min="0" value="0" id="prod_23">
+<span class="subtotal" id="sub_23">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Choclo (tarros)</span>
+<span class="producto-precio">$1,878</span>
+<input type="number" class="cantidad-input" data-nombre="Choclo (tarros)" data-precio="1878" min="0" value="0" id="prod_24">
+<span class="subtotal" id="sub_24">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Detergente 800 grs (und.)</span>
+<span class="producto-precio">$2,400</span>
+<input type="number" class="cantidad-input" data-nombre="Detergente 800 grs (und.)" data-precio="2400" min="0" value="0" id="prod_25">
+<span class="subtotal" id="sub_25">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Durazno 880 grs(tarro)</span>
+<span class="producto-precio">$1,777</span>
+<input type="number" class="cantidad-input" data-nombre="Durazno 880 grs(tarro)" data-precio="1777" min="0" value="0" id="prod_26">
+<span class="subtotal" id="sub_26">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Espirales (und.)</span>
+<span class="producto-precio">$965</span>
+<input type="number" class="cantidad-input" data-nombre="Espirales (und.)" data-precio="965" min="0" value="0" id="prod_27">
+<span class="subtotal" id="sub_27">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Escobillón (und.)</span>
+<span class="producto-precio">$1,600</span>
+<input type="number" class="cantidad-input" data-nombre="Escobillón (und.)" data-precio="1600" min="0" value="0" id="prod_28">
+<span class="subtotal" id="sub_28">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Esponjas amarilla (und)</span>
+<span class="producto-precio">$296</span>
+<input type="number" class="cantidad-input" data-nombre="Esponjas amarilla (und)" data-precio="296" min="0" value="0" id="prod_29">
+<span class="subtotal" id="sub_29">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Fósforos (paq.x10)</span>
+<span class="producto-precio">$1,800</span>
+<input type="number" class="cantidad-input" data-nombre="Fósforos (paq.x10)" data-precio="1800" min="0" value="0" id="prod_30">
+<span class="subtotal" id="sub_30">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Frutilla 420 gr (tarro)</span>
+<span class="producto-precio">$1,900</span>
+<input type="number" class="cantidad-input" data-nombre="Frutilla 420 gr (tarro)" data-precio="1900" min="0" value="0" id="prod_31">
+<span class="subtotal" id="sub_31">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Guantes cocina (und.)</span>
+<span class="producto-precio">$1,190</span>
+<input type="number" class="cantidad-input" data-nombre="Guantes cocina (und.)" data-precio="1190" min="0" value="0" id="prod_32">
+<span class="subtotal" id="sub_32">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Harina (Saco) 25 kg</span>
+<span class="producto-precio">$18,491</span>
+<input type="number" class="cantidad-input" data-nombre="Harina (Saco) 25 kg" data-precio="18491" min="0" value="0" id="prod_33">
+<span class="subtotal" id="sub_33">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Harina (5kg)</span>
+<span class="producto-precio">$4,687</span>
+<input type="number" class="cantidad-input" data-nombre="Harina (5kg)" data-precio="4687" min="0" value="0" id="prod_34">
+<span class="subtotal" id="sub_34">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Huevos (und.)</span>
+<span class="producto-precio">$277</span>
+<input type="number" class="cantidad-input" data-nombre="Huevos (und.)" data-precio="277" min="0" value="0" id="prod_35">
+<span class="subtotal" id="sub_35">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jabón cara (und.)</span>
+<span class="producto-precio">$427</span>
+<input type="number" class="cantidad-input" data-nombre="Jabón cara (und.)" data-precio="427" min="0" value="0" id="prod_36">
+<span class="subtotal" id="sub_36">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jabon de ropa Popeye (und.)</span>
+<span class="producto-precio">$1,054</span>
+<input type="number" class="cantidad-input" data-nombre="Jabon de ropa Popeye (und.)" data-precio="1054" min="0" value="0" id="prod_37">
+<span class="subtotal" id="sub_37">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jugo Limón 500 ml (und.)</span>
+<span class="producto-precio">$730</span>
+<input type="number" class="cantidad-input" data-nombre="Jugo Limón 500 ml (und.)" data-precio="730" min="0" value="0" id="prod_38">
+<span class="subtotal" id="sub_38">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jugo (und.)</span>
+<span class="producto-precio">$130</span>
+<input type="number" class="cantidad-input" data-nombre="Jugo (und.)" data-precio="130" min="0" value="0" id="prod_39">
+<span class="subtotal" id="sub_39">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jalea (und.)</span>
+<span class="producto-precio">$790</span>
+<input type="number" class="cantidad-input" data-nombre="Jalea (und.)" data-precio="790" min="0" value="0" id="prod_40">
+<span class="subtotal" id="sub_40">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Jurel (tarros)</span>
+<span class="producto-precio">$1,067</span>
+<input type="number" class="cantidad-input" data-nombre="Jurel (tarros)" data-precio="1067" min="0" value="0" id="prod_41">
+<span class="subtotal" id="sub_41">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Lavaloza 500 ml.(und.)</span>
+<span class="producto-precio">$1,701</span>
+<input type="number" class="cantidad-input" data-nombre="Lavaloza 500 ml.(und.)" data-precio="1701" min="0" value="0" id="prod_42">
+<span class="subtotal" id="sub_42">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Leche Condensada (tarro)</span>
+<span class="producto-precio">$1,332</span>
+<input type="number" class="cantidad-input" data-nombre="Leche Condensada (tarro)" data-precio="1332" min="0" value="0" id="prod_43">
+<span class="subtotal" id="sub_43">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Leche en polvo (900 grs)</span>
+<span class="producto-precio">$7,620</span>
+<input type="number" class="cantidad-input" data-nombre="Leche en polvo (900 grs)" data-precio="7620" min="0" value="0" id="prod_44">
+<span class="subtotal" id="sub_44">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Lentejas (kg)</span>
+<span class="producto-precio">$1,766</span>
+<input type="number" class="cantidad-input" data-nombre="Lentejas (kg)" data-precio="1766" min="0" value="0" id="prod_45">
+<span class="subtotal" id="sub_45">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Levadura (und.)</span>
+<span class="producto-precio">$2,050</span>
+<input type="number" class="cantidad-input" data-nombre="Levadura (und.)" data-precio="2050" min="0" value="0" id="prod_46">
+<span class="subtotal" id="sub_46">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Manteca (und)</span>
+<span class="producto-precio">$4,818</span>
+<input type="number" class="cantidad-input" data-nombre="Manteca (und)" data-precio="4818" min="0" value="0" id="prod_47">
+<span class="subtotal" id="sub_47">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Mantequilla (und.)</span>
+<span class="producto-precio">$2,476</span>
+<input type="number" class="cantidad-input" data-nombre="Mantequilla (und.)" data-precio="2476" min="0" value="0" id="prod_48">
+<span class="subtotal" id="sub_48">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Manzana (kg)</span>
+<span class="producto-precio">$1,389</span>
+<input type="number" class="cantidad-input" data-nombre="Manzana (kg)" data-precio="1389" min="0" value="0" id="prod_49">
+<span class="subtotal" id="sub_49">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Mayonesa (500cc)</span>
+<span class="producto-precio">$1,412</span>
+<input type="number" class="cantidad-input" data-nombre="Mayonesa (500cc)" data-precio="1412" min="0" value="0" id="prod_50">
+<span class="subtotal" id="sub_50">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Mermelada (und.)</span>
+<span class="producto-precio">$690</span>
+<input type="number" class="cantidad-input" data-nombre="Mermelada (und.)" data-precio="690" min="0" value="0" id="prod_51">
+<span class="subtotal" id="sub_51">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Naranja (kg)</span>
+<span class="producto-precio">$2,589</span>
+<input type="number" class="cantidad-input" data-nombre="Naranja (kg)" data-precio="2589" min="0" value="0" id="prod_52">
+<span class="subtotal" id="sub_52">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Orégano 100 grs. (und.)</span>
+<span class="producto-precio">$200</span>
+<input type="number" class="cantidad-input" data-nombre="Orégano 100 grs. (und.)" data-precio="200" min="0" value="0" id="prod_53">
+<span class="subtotal" id="sub_53">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Paño Multiuso (und.)</span>
+<span class="producto-precio">$1,100</span>
+<input type="number" class="cantidad-input" data-nombre="Paño Multiuso (und.)" data-precio="1100" min="0" value="0" id="prod_54">
+<span class="subtotal" id="sub_54">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Paño de cocina (und.)</span>
+<span class="producto-precio">$953</span>
+<input type="number" class="cantidad-input" data-nombre="Paño de cocina (und.)" data-precio="953" min="0" value="0" id="prod_55">
+<span class="subtotal" id="sub_55">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Paño para trapear (und.)</span>
+<span class="producto-precio">$1,066</span>
+<input type="number" class="cantidad-input" data-nombre="Paño para trapear (und.)" data-precio="1066" min="0" value="0" id="prod_56">
+<span class="subtotal" id="sub_56">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Papas (kg.)</span>
+<span class="producto-precio">$675</span>
+<input type="number" class="cantidad-input" data-nombre="Papas (kg.)" data-precio="675" min="0" value="0" id="prod_57">
+<span class="subtotal" id="sub_57">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Papel higiénico (und.)</span>
+<span class="producto-precio">$780</span>
+<input type="number" class="cantidad-input" data-nombre="Papel higiénico (und.)" data-precio="780" min="0" value="0" id="prod_58">
+<span class="subtotal" id="sub_58">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Pasta de Dental ( und)</span>
+<span class="producto-precio">$1,400</span>
+<input type="number" class="cantidad-input" data-nombre="Pasta de Dental ( und)" data-precio="1400" min="0" value="0" id="prod_59">
+<span class="subtotal" id="sub_59">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Pimiento Morron 210 gr</span>
+<span class="producto-precio">$961</span>
+<input type="number" class="cantidad-input" data-nombre="Pimiento Morron 210 gr" data-precio="961" min="0" value="0" id="prod_60">
+<span class="subtotal" id="sub_60">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Pimentón (und.)</span>
+<span class="producto-precio">$400</span>
+<input type="number" class="cantidad-input" data-nombre="Pimentón (und.)" data-precio="400" min="0" value="0" id="prod_61">
+<span class="subtotal" id="sub_61">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Polvo de hornear (tarros)</span>
+<span class="producto-precio">$2,000</span>
+<input type="number" class="cantidad-input" data-nombre="Polvo de hornear (tarros)" data-precio="2000" min="0" value="0" id="prod_62">
+<span class="subtotal" id="sub_62">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Pollo entero (2 kg app)</span>
+<span class="producto-precio">$6,301</span>
+<input type="number" class="cantidad-input" data-nombre="Pollo entero (2 kg app)" data-precio="6301" min="0" value="0" id="prod_63">
+<span class="subtotal" id="sub_63">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Porotitos verdes (tarros)</span>
+<span class="producto-precio">$1,200</span>
+<input type="number" class="cantidad-input" data-nombre="Porotitos verdes (tarros)" data-precio="1200" min="0" value="0" id="prod_64">
+<span class="subtotal" id="sub_64">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Porotos (kg.)</span>
+<span class="producto-precio">$2,000</span>
+<input type="number" class="cantidad-input" data-nombre="Porotos (kg.)" data-precio="2000" min="0" value="0" id="prod_65">
+<span class="subtotal" id="sub_65">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Quaker</span>
+<span class="producto-precio">$2,025</span>
+<input type="number" class="cantidad-input" data-nombre="Quaker" data-precio="2025" min="0" value="0" id="prod_66">
+<span class="subtotal" id="sub_66">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sal (kg.)</span>
+<span class="producto-precio">$608</span>
+<input type="number" class="cantidad-input" data-nombre="Sal (kg.)" data-precio="608" min="0" value="0" id="prod_67">
+<span class="subtotal" id="sub_67">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Salsa Tomate (und.)</span>
+<span class="producto-precio">$586</span>
+<input type="number" class="cantidad-input" data-nombre="Salsa Tomate (und.)" data-precio="586" min="0" value="0" id="prod_68">
+<span class="subtotal" id="sub_68">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sémola (und.)</span>
+<span class="producto-precio">$1,191</span>
+<input type="number" class="cantidad-input" data-nombre="Sémola (und.)" data-precio="1191" min="0" value="0" id="prod_69">
+<span class="subtotal" id="sub_69">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Shampo  1 lts ( und. )</span>
+<span class="producto-precio">$1,663</span>
+<input type="number" class="cantidad-input" data-nombre="Shampo  1 lts ( und. )" data-precio="1663" min="0" value="0" id="prod_70">
+<span class="subtotal" id="sub_70">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sopas Caracolitos (und)</span>
+<span class="producto-precio">$535</span>
+<input type="number" class="cantidad-input" data-nombre="Sopas Caracolitos (und)" data-precio="535" min="0" value="0" id="prod_71">
+<span class="subtotal" id="sub_71">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sopa Costilla (und)</span>
+<span class="producto-precio">$555</span>
+<input type="number" class="cantidad-input" data-nombre="Sopa Costilla (und)" data-precio="555" min="0" value="0" id="prod_72">
+<span class="subtotal" id="sub_72">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sopa Pollo / Fideos (und)</span>
+<span class="producto-precio">$543</span>
+<input type="number" class="cantidad-input" data-nombre="Sopa Pollo / Fideos (und)" data-precio="543" min="0" value="0" id="prod_73">
+<span class="subtotal" id="sub_73">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Sopa Pollo /Arroz</span>
+<span class="producto-precio">$300</span>
+<input type="number" class="cantidad-input" data-nombre="Sopa Pollo /Arroz" data-precio="300" min="0" value="0" id="prod_74">
+<span class="subtotal" id="sub_74">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Tallarines (und.)</span>
+<span class="producto-precio">$1,113</span>
+<input type="number" class="cantidad-input" data-nombre="Tallarines (und.)" data-precio="1113" min="0" value="0" id="prod_75">
+<span class="subtotal" id="sub_75">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Te (cajitas)</span>
+<span class="producto-precio">$800</span>
+<input type="number" class="cantidad-input" data-nombre="Te (cajitas)" data-precio="800" min="0" value="0" id="prod_76">
+<span class="subtotal" id="sub_76">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Vinagre (und.)</span>
+<span class="producto-precio">$760</span>
+<input type="number" class="cantidad-input" data-nombre="Vinagre (und.)" data-precio="760" min="0" value="0" id="prod_77">
+<span class="subtotal" id="sub_77">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Virutilla de olla ( und. )</span>
+<span class="producto-precio">$588</span>
+<input type="number" class="cantidad-input" data-nombre="Virutilla de olla ( und. )" data-precio="588" min="0" value="0" id="prod_78">
+<span class="subtotal" id="sub_78">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Virutilla piso (und.)</span>
+<span class="producto-precio">$700</span>
+<input type="number" class="cantidad-input" data-nombre="Virutilla piso (und.)" data-precio="700" min="0" value="0" id="prod_79">
+<span class="subtotal" id="sub_79">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Yerba (kg.)</span>
+<span class="producto-precio">$4,187</span>
+<input type="number" class="cantidad-input" data-nombre="Yerba (kg.)" data-precio="4187" min="0" value="0" id="prod_80">
+<span class="subtotal" id="sub_80">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Zanahoria (kg.)</span>
+<span class="producto-precio">$1,289</span>
+<input type="number" class="cantidad-input" data-nombre="Zanahoria (kg.)" data-precio="1289" min="0" value="0" id="prod_81">
+<span class="subtotal" id="sub_81">$0</span>
+</div>
+<div class="producto-row">
+<span class="producto-nombre">Zapallo kg</span>
+<span class="producto-precio">$1,489</span>
+<input type="number" class="cantidad-input" data-nombre="Zapallo kg" data-precio="1489" min="0" value="0" id="prod_82">
+<span class="subtotal" id="sub_82">$0</span>
+</div>
+
+</div>
+<div class="footer-sticky">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="total-section">
+<div><div class="total-label">Total</div><div class="total-amount">$<span id="totalPedido">0</span></div>
+<div id="estadoPresupuesto" style="font-size:11px;margin-top:4px;font-weight:600"></div>
+</div>
+</div>
+<button class="btn btn-primary" onclick="mostrarRevision()" id="btnEnviar">Enviar Pedido</button>
+</div>
+</div>
+
+<!-- REVISION -->
+<div class="container" id="pantallaRevision" style="display:none">
+<div class="header"><h1>📋 Revisar Pedido</h1><p>Verifique que todo esté correcto</p></div>
+<div style="padding:20px">
+<div style="background:#f7fafc;padding:16px;border-radius:8px;margin-bottom:20px">
+<div style="font-weight:600;font-size:16px" id="revNombre"></div>
+<div style="font-size:14px;color:#666;margin-top:4px" id="revMes"></div>
+</div>
+<div style="margin-bottom:20px">
+<h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Productos:</h3>
+<div id="listaRevision" style="background:white;border:2px solid #e2e8f0;border-radius:8px;max-height:50vh;overflow-y:auto"></div>
+</div>
+<div style="background:#ebf8ff;border:2px solid #2c5282;padding:20px;border-radius:8px;text-align:center;margin-bottom:20px">
+<div style="font-size:14px;color:#4a5568">TOTAL</div>
+<div style="font-size:32px;font-weight:bold;color:#2c5282;margin-top:4px" id="revTotal">$0</div>
+<div id="revEstado" style="font-size:13px;margin-top:8px;font-weight:600"></div>
+</div>
+<div style="display:flex;gap:12px">
+<button class="btn btn-secondary" onclick="volverEditar()">← Editar</button>
+<button class="btn btn-primary" onclick="confirmarEnvio()" id="btnConfirmar">✓ Confirmar</button>
+</div>
+</div>
+</div>
+
+<!-- EXITO -->
+<div class="container" id="pantallaExito" style="display:none">
+<div class="header"><h1>✓ Pedido Enviado</h1></div>
+<div style="padding:40px;text-align:center">
+<div style="font-size:72px;margin-bottom:20px">✅</div>
+<h2 style="font-size:24px;color:#2d3748;margin-bottom:16px">¡Pedido Enviado!</h2>
+<div style="background:#c6f6d5;border:2px solid #48bb78;padding:20px;border-radius:8px;margin:24px 0">
+<div style="font-size:16px;color:#22543d;font-weight:600" id="exitoMensaje"></div>
+</div>
+<button class="btn btn-primary" onclick="volverInicio()">Volver al Inicio</button>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div class="container admin-panel" id="adminPanel">
+<div class="admin-header">
+<h2>📊 Panel Admin</h2>
+<span style="background:rgba(255,255,255,.3);padding:4px 12px;border-radius:12px" id="contador">0</span>
+</div>
+<div class="admin-content">
+<button class="btn btn-secondary" onclick="exportarExcel()">📥 Exportar Excel</button>
+<button class="btn btn-primary" onclick="volverLogin()">← Volver</button>
+<div id="listaPedidos" style="margin-top:16px"></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const PASSWORD_ADMIN='estancia2026';
+const PRODUCTOS=["Aceite (und.)", "Aceituna 340gr", "Aji crema 240 grs", "Ajo polvo (und.) 50 grs", "Arroz (kg.)", "Arvejitas (tarros)", "Arvejas (kg.)", "Azúcar (kg.)", "Atún (tarro)", "Bolsa basura (paq.)", "Café (tarros)", "Cabello ángel (und.)", "Caldo Maggi Carne (12und)", "Caldo Maggi Gallina (12und)", "Caldo Maggi Verdura (12 und)", "Cebolla (kg)", "Cera piso roja (und)", "Cera piso liquida(und.)", "Cif crema (und.)", "Cloro 1 lts ( und)", "Comino (und.)", "Corbata (und.)", "Crema de esparrago 68grs", "Crema (tarros)", "Choclo (tarros)", "Detergente 800 grs (und.)", "Durazno 880 grs(tarro)", "Espirales (und.)", "Escobillón (und.)", "Esponjas amarilla (und)", "Fósforos (paq.x10)", "Frutilla 420 gr (tarro)", "Guantes cocina (und.)", "Harina (Saco) 25 kg", "Harina (5kg)", "Huevos (und.)", "Jabón cara (und.)", "Jabon de ropa Popeye (und.)", "Jugo Limón 500 ml (und.)", "Jugo (und.)", "Jalea (und.)", "Jurel (tarros)", "Lavaloza 500 ml.(und.)", "Leche Condensada (tarro)", "Leche en polvo (900 grs)", "Lentejas (kg)", "Levadura (und.)", "Manteca (und)", "Mantequilla (und.)", "Manzana (kg)", "Mayonesa (500cc)", "Mermelada (und.)", "Naranja (kg)", "Orégano 100 grs. (und.)", "Paño Multiuso (und.)", "Paño de cocina (und.)", "Paño para trapear (und.)", "Papas (kg.)", "Papel higiénico (und.)", "Pasta de Dental ( und)", "Pimiento Morron 210 gr", "Pimentón (und.)", "Polvo de hornear (tarros)", "Pollo entero (2 kg app)", "Porotitos verdes (tarros)", "Porotos (kg.)", "Quaker", "Sal (kg.)", "Salsa Tomate (und.)", "Sémola (und.)", "Shampo  1 lts ( und. )", "Sopas Caracolitos (und)", "Sopa Costilla (und)", "Sopa Pollo / Fideos (und)", "Sopa Pollo /Arroz", "Tallarines (und.)", "Te (cajitas)", "Vinagre (und.)", "Virutilla de olla ( und. )", "Virutilla piso (und.)", "Yerba (kg.)", "Zanahoria (kg.)", "Zapallo kg"];
+// CONFIGURACIÓN GOOGLE SHEETS - Pega tu URL aquí:
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwL8ehMonOI0IBc6nMJ0UILrLfEM7ukMbOUILnOzxGUB20lP8S4XevWsf4627K63dk1/exec';
+
+let presupuesto=0;
+let nombre='';
+let mes='';
+
+function iniciarPedido(){
+const n=document.getElementById('nombreTrabajador');
+const m=document.getElementById('mesPedido');
+if(!n.value){alert('Seleccione su nombre');return}
+if(!m.value){alert('Seleccione el mes');return}
+const opt=n.options[n.selectedIndex];
+const p=opt.dataset.presupuesto;
+presupuesto=p==='null'?999999999:parseInt(p);
+nombre=n.value;
+mes=m.value;
+document.getElementById('displayNombre').textContent=nombre;
+document.getElementById('displayMes').textContent=mes;
+document.getElementById('loginScreen').style.display='none';
+document.getElementById('formScreen').classList.add('active');
+calcular();
+}
+
+function cerrarSesion(){
+if(confirm('¿Salir? Se perderá el pedido si no guardó')){
+document.querySelectorAll('.cantidad-input').forEach(i=>i.value=0);
+document.getElementById('formScreen').classList.remove('active');
+document.getElementById('loginScreen').style.display='block';
+calcular();
+}
+}
+
+function calcular(){
+let total=0;
+document.querySelectorAll('.cantidad-input').forEach((inp,idx)=>{
+const cant=parseInt(inp.value)||0;
+const precio=parseInt(inp.dataset.precio);
+const sub=cant*precio;
+document.getElementById('sub_'+idx).textContent=sub>0?'$'+sub.toLocaleString('es-CL'):'$0';
+total+=sub;
+});
+document.getElementById('totalPedido').textContent=total.toLocaleString('es-CL');
+const pct=presupuesto===999999999?0:(total/presupuesto)*100;
+const fill=document.getElementById('progressFill');
+fill.style.width=Math.min(pct,100)+'%';
+fill.className='progress-fill'+(pct>=100?' danger':pct>=80?' warning':'');
+const btn=document.getElementById('btnEnviar');
+const alert=document.getElementById('alertError');
+const estado=document.getElementById('estadoPresupuesto');
+if(presupuesto===999999999){
+estado.textContent='Sin límite';
+estado.style.color='#48bb78';
+btn.disabled=false;
+alert.classList.remove('visible');
+}else if(total>presupuesto){
+estado.textContent='⚠️ Presupuesto excedido';
+estado.style.color='#e53e3e';
+btn.disabled=true;
+alert.classList.add('visible');
+}else{
+const pct=Math.round((total/presupuesto)*100);
+if(pct>=90){
+estado.textContent='⚠️ '+pct+'% usado';
+estado.style.color='#ed8936';
+}else if(pct>=70){
+estado.textContent='✓ '+pct+'% usado';
+estado.style.color='#d69e2e';
+}else{
+estado.textContent='✓ Dentro del presupuesto';
+estado.style.color='#48bb78';
+}
+btn.disabled=false;
+alert.classList.remove('visible');
+}
+}
+
+document.querySelectorAll('.cantidad-input').forEach(i=>i.addEventListener('input',calcular));
+
+function mostrarRevision(){
+const prods=[];
+let total=0;
+document.querySelectorAll('.cantidad-input').forEach(inp=>{
+const cant=parseInt(inp.value)||0;
+if(cant>0){
+const precio=parseInt(inp.dataset.precio);
+prods.push({nombre:inp.dataset.nombre,cantidad:cant,precio:precio,subtotal:cant*precio});
+total+=cant*precio;
+}
+});
+if(prods.length===0){alert('Seleccione al menos un producto');return}
+document.getElementById('revNombre').textContent=nombre;
+document.getElementById('revMes').textContent='Mes: '+mes;
+document.getElementById('revTotal').textContent='$'+total.toLocaleString('es-CL');
+const lista=document.getElementById('listaRevision');
+lista.innerHTML=prods.map(p=>`
+<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #f0f0f0">
+<div style="flex:1">
+<div style="font-weight:500;font-size:14px">${p.nombre}</div>
+<div style="font-size:12px;color:#666">${p.cantidad} × $${p.precio.toLocaleString('es-CL')}</div>
+</div>
+<div style="font-weight:600;color:#2c5282">$${p.subtotal.toLocaleString('es-CL')}</div>
+</div>
+`).join('');
+const estado=document.getElementById('revEstado');
+const btnConf=document.getElementById('btnConfirmar');
+if(presupuesto===999999999){
+estado.textContent='Sin límite';
+estado.style.color='#48bb78';
+btnConf.disabled=false;
+}else if(total>presupuesto){
+estado.textContent='⚠️ Excede presupuesto';
+estado.style.color='#e53e3e';
+btnConf.disabled=true;
+}else{
+const pct=Math.round((total/presupuesto)*100);
+estado.textContent='✓ Dentro ('+pct+'% usado)';
+estado.style.color='#48bb78';
+btnConf.disabled=false;
+}
+document.getElementById('formScreen').classList.remove('active');
+document.getElementById('pantallaRevision').style.display='block';
+}
+
+function volverEditar(){
+document.getElementById('pantallaRevision').style.display='none';
+document.getElementById('formScreen').classList.add('active');
+}
+
+function confirmarEnvio(){
+const prods=[];
+let total=0;
+document.querySelectorAll('.cantidad-input').forEach(inp=>{
+const cant=parseInt(inp.value)||0;
+if(cant>0){
+const precio=parseInt(inp.dataset.precio);
+prods.push({nombre:inp.dataset.nombre,cantidad:cant,precio:precio,subtotal:cant*precio});
+total+=cant*precio;
+}
+});
+const pedido={id:Date.now(),fecha:new Date().toLocaleString('es-CL'),nombre:nombre,mes:mes,presupuesto:presupuesto===999999999?null:presupuesto,productos:prods,total:total};
+pedidos.push(pedido);
+localStorage.setItem('pedidos_viveres',JSON.stringify(pedidos));
+document.getElementById('exitoMensaje').textContent='Su lista de víveres de '+mes+' ya fue enviada';
+document.getElementById('pantallaRevision').style.display='none';
+document.getElementById('pantallaExito').style.display='block';
+}
+
+function volverInicio(){
+document.querySelectorAll('.cantidad-input').forEach(i=>i.value=0);
+document.getElementById('pantallaExito').style.display='none';
+document.getElementById('loginScreen').style.display='block';
+document.getElementById('nombreTrabajador').value='';
+document.getElementById('mesPedido').value='';
+}
+
+function pedirPasswordAdmin(){
+const pass=prompt('Contraseña de administrador:');
+if(pass===PASSWORD_ADMIN){
+verAdmin();
+}else if(pass!==null){
+alert('Contraseña incorrecta');
+}
+}
+
+function verAdmin(){
+document.getElementById('loginScreen').style.display='none';
+document.getElementById('adminPanel').classList.add('active');
+renderPedidos();
+}
+
+function volverLogin(){
+document.getElementById('adminPanel').classList.remove('active');
+document.getElementById('loginScreen').style.display='block';
+}
+
+function renderPedidos(){
+const lista=document.getElementById('listaPedidos');
+document.getElementById('contador').textContent=pedidos.length;
+if(pedidos.length===0){
+lista.innerHTML='<div style="text-align:center;padding:60px;color:#999"><p style="font-size:48px">📋</p><p>No hay pedidos</p></div>';
+return;
+}
+lista.innerHTML=pedidos.map(p=>`<div class="pedido-card">
+<div style="display:flex;justify-content:space-between;margin-bottom:12px">
+<div>
+<div style="font-weight:600;font-size:16px">${p.nombre}</div>
+<div style="font-size:11px;color:#666">${p.fecha} • ${p.mes}</div>
+</div>
+<div style="font-size:18px;font-weight:bold;color:#48bb78">$${p.total.toLocaleString('es-CL')}</div>
+</div>
+<div style="font-size:12px;color:#666"><strong>${p.productos.length} productos</strong></div>
+</div>`).join('');
+}
+
+function exportarExcel(){
+if(pedidos.length===0){alert('No hay pedidos');return}
+const trabajadores=[...new Set(pedidos.map(p=>p.nombre))];
+const matriz=[['Detalle',...trabajadores,'TOTAL']];
+PRODUCTOS.forEach(prod=>{
+const fila=[prod];
+let tot=0;
+trabajadores.forEach(trab=>{
+const ped=pedidos.find(p=>p.nombre===trab);
+const pr=ped?.productos.find(p=>p.nombre===prod);
+const cant=pr?.cantidad||0;
+fila.push(cant);
+tot+=cant;
+});
+fila.push(tot);
+matriz.push(fila);
+});
+const detalle=[['Trabajador','Mes','Producto','Cantidad','Precio','Subtotal','Total']];
+pedidos.forEach(ped=>{
+ped.productos.forEach((pr,i)=>{
+detalle.push([ped.nombre,ped.mes,pr.nombre,pr.cantidad,pr.precio,pr.subtotal,i===0?ped.total:'']);
+});
+});
+const resumen=[['Producto','Cantidad Total','Precio','Costo Total']];
+const map=new Map();
+pedidos.forEach(ped=>{
+ped.productos.forEach(pr=>{
+if(map.has(pr.nombre)){
+const e=map.get(pr.nombre);
+e.cantidad+=pr.cantidad;
+e.total+=pr.subtotal;
+}else{
+map.set(pr.nombre,{cantidad:pr.cantidad,precio:pr.precio,total:pr.subtotal});
+}
+});
+});
+map.forEach((v,k)=>{
+resumen.push([k,v.cantidad,v.precio,v.total]);
+});
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(matriz),'Matriz Marzo');
+XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(detalle),'Detalle por Trabajador');
+XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(resumen),'Resumen Inventario');
+XLSX.writeFile(wb,'Viveres_'+new Date().toISOString().split('T')[0]+'.xlsx');
+}
+</script>
+</body>
+</html>
